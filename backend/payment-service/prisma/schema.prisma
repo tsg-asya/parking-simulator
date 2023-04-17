@@ -1,0 +1,72 @@
+datasource postgres {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  createdAt     DateTime      @default(now())
+  firstName     String?
+  id            String        @id @default(cuid())
+  lastName      String?
+  password      String
+  reservationId Reservation[]
+  roles         Json
+  updatedAt     DateTime      @updatedAt
+  username      String        @unique
+}
+
+model Payment {
+  amount          Float
+  createdAt       DateTime                 @default(now())
+  id              String                   @id @default(cuid())
+  paymentMethod   EnumPaymentPaymentMethod
+  paymentTime     DateTime                 @default(now())
+  reservationId   Reservation?             @relation(fields: [reservationIdId], references: [id])
+  reservationIdId String?
+  updatedAt       DateTime                 @updatedAt
+}
+
+model Reservation {
+  createdAt        DateTime     @default(now())
+  customerId       User         @relation(fields: [customerIdId], references: [id])
+  customerIdId     String
+  endTime          DateTime?
+  id               String       @id @default(cuid())
+  parkingSpaceId   ParkingSpace @relation(fields: [parkingSpaceIdId], references: [id])
+  parkingSpaceIdId String       @unique
+  payments_id      Payment[]
+  startTime        DateTime?
+  updatedAt        DateTime     @updatedAt
+}
+
+model ParkingLot {
+  capacity         Int
+  createdAt        DateTime       @default(now())
+  hourlyRate       Int
+  id               String         @id @default(cuid())
+  location         String
+  name             String         @unique
+  parking_space_id ParkingSpace[]
+  updatedAt        DateTime       @updatedAt
+}
+
+model ParkingSpace {
+  createdAt      DateTime      @default(now())
+  id             String        @id @default(cuid())
+  isAvailable    Boolean
+  parkingLotId   ParkingLot    @relation(fields: [parkingLotIdId], references: [id])
+  parkingLotIdId String
+  reservation_id Reservation[]
+  updatedAt      DateTime      @updatedAt
+}
+
+enum EnumPaymentPaymentMethod {
+  Upi
+  Cash
+  Netbanking
+  Sudexo
+}
